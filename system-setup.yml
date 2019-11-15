@@ -1,0 +1,50 @@
+# ~/.tmuxinator/system_test.yml
+
+name: system_tests
+root: ~/system_tests/
+
+on_project_stop: echo "On `tmuxinator stop hook-demo`" && sleep 2
+on_project_exit: echo "On detach (prefix+d)" && sleep 2
+windows:
+    - editor:
+            layout: tiled
+            panes:
+              - proxy:
+                - rm -fr cardano-byron-proxy
+                - git clone https://github.com/input-output-hk/cardano-byron-proxy
+                - cd cardano-byron-proxy
+                - nix-build -A scripts.mainnet.proxy -o proxy
+                - ./proxy
+              - node1:
+                - sleep 180
+                - rm -fr cardano-node1
+                - git clone https://github.com/input-output-hk/cardano-node cardano-node1
+                - cd cardano-node1
+                - mkdir launch_mainnet.d
+                - cp ../log-configuration.yaml ./launch_mainnet.d/
+                - nix-build -A scripts.mainnet.node -o launch_mainnet --arg customConfig '{ useProxy = true; }'
+                - ./launch_mainnet
+              - node2:
+                - sleep 180
+                - rm -fr cardano-node2
+                - git clone https://github.com/input-output-hk/cardano-node cardano-node2
+                - cd cardano-node2
+                - mkdir launch_mainnet.d
+                - cp ../log-configuration.yaml ./launch_mainnet.d/
+                - nix-build -A scripts.mainnet.node -o launch_mainnet --arg customConfig '{ useProxy = true; }'
+                - ./launch_mainnet
+              - node3:
+                - sleep 180
+                - rm -fr cardano-node3
+                - git clone https://github.com/input-output-hk/cardano-node cardano-node3
+                - cd cardano-node3
+                - mkdir launch_mainnet.d
+                - cp ../log-configuration.yaml ./launch_mainnet.d/
+                - nix-build -A scripts.mainnet.node -o launch_mainnet --arg customConfig '{ useProxy = true; }'
+                - ./launch_mainnet
+              - node1-explorer:
+                - sleep 300
+                - rm -fr cardano-explorer-for-node-1
+                - dropdb cexplorer
+                - git clone https://github.com/input-output-hk/cardano-explorer cardano-explorer-for-node-1
+                - cd cardano-explorer-for-node-1
